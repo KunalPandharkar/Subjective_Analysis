@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Subject Answer Evaluation | Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+</head>
+
+<style>
+    .top-header {
+        padding: 25px;
+    }
+
+    .navbar-brand {
+        color: white;
+        font-size: 27px;
+    }
+
+    .bottom-section h1 {
+        font-size: 28px;
+        padding-top: 25px;
+    }
+</style>
+
+<body>
+    <nav class="top-header bg-primary" data-bs-theme="dark">
+        <div class="container-fluid text-center">
+            <a class="navbar-brand" href="#">Subjective Answer Analysis</a>
+        </div>
+    </nav>
+    <div class="bottom-section container">
+        <h1>Upload The Answer For Evaluation</h1>
+        <form method="post" enctype="multipart/form-data" style="padding-top: 17px;">
+
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Upload Answer Image</label>
+                <input class="form-control" type="file" name="file" id="file">
+            </div>
+            <div class="mb-3">
+                <label for="exampleFormControlTextarea1" class="form-label">Standard answer</label>
+                <textarea class="form-control" name="standard_answer" id="standard_answer" rows="5"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="inputPassword2" class="form-label">Marks</label>
+                <input type="number" class="form-control" name="marks" id="marks" placeholder="Total Marks">
+            </div>
+
+            <button type="submit" value="Submit" class="btn btn-success">Generate Marks</button>
+        </form>
+    </div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    crossorigin="anonymous"></script>
+</body>
+
+</html>
