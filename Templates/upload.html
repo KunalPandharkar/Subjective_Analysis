@@ -11,26 +11,114 @@
 
 <style>
     .top-header {
-        padding: 25px;
-    }
-
-    .navbar-brand {
-        color: white;
-        font-size: 27px;
+        padding-left: 38px;
     }
 
     .bottom-section h1 {
         font-size: 28px;
         padding-top: 25px;
     }
+
+    /* Add some padding and margin to the cards */
+    .card {
+        padding: 20px;
+        margin: 10px;
+        border-radius: 10px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Add a gradient background color to each card */
+    .card-1 {
+        background: linear-gradient(135deg, #c850c0, #4158d0);
+        color: white;
+    }
+
+    .card-2 {
+        background: linear-gradient(135deg, #2193b0, #6dd5ed);
+        color: white;
+    }
+
+    .card-3 {
+        background: linear-gradient(135deg, #fc4a1a, #f7b733);
+        color: white;
+    }
+
+    .card-4 {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: white;
+    }
+
+    /* Add some style to the count and label */
+    .count-label {
+        font-size: 48px;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .label {
+        font-size: 24px;
+    }
 </style>
 
 <body>
-    <nav class="top-header bg-primary" data-bs-theme="dark">
-        <div class="container-fluid text-center">
-            <a class="navbar-brand" href="#">Subjective Answer Analysis</a>
+
+
+    <nav class="top-header navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">Subjective Answer Evaluation</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('submit_questionpaper') }}">Add Question Paper</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/allresults">Download Results</a>
+                </li>
+
+            </ul>
         </div>
     </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-3">
+                <div class="card card-1">
+                    <div class="count-label">{{student_count}}</div>
+                    <div class="label">Total Students</div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="card card-2">
+                    <div class="count-label">{{questions_count}}</div>
+                    <div class="label">Total Questions</div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="card card-3">
+                    <div class="count-label">30</div>
+                    <div class="label">Card 3</div>
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="card card-4">
+                    <div class="count-label">40</div>
+                    <div class="label">Card 4</div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="bottom-section container">
         <h1>Upload The Answer For Evaluation</h1>
         <form method="post" enctype="multipart/form-data" style="padding-top: 17px;">

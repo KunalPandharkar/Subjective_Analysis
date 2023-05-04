@@ -26,6 +26,11 @@ class Student(db.Model):
     marks = db.Column(db.Integer)
     total_marks = db.Column(db.Integer)
 
+class QuestionAnswers(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(100))
+    answer = db.Column(db.String(600))
+    question_marks = db.Column(db.Integer)
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -65,7 +70,7 @@ def upload_file():
 
         # Using regular expression to extract roll number
         # Using regular expressions to extract roll number, name, and subject
-        roll_pattern = r'roll:(\d+)'
+        roll_pattern = r'roll-(\d+)'
         roll_match = re.search(roll_pattern, output_str)
         
         roll_number = 0
@@ -125,11 +130,43 @@ def upload_file():
         # Clear the plot to avoid issues with overlapping images
         plt.clf()
 
-        students = Student.query.all()
+     
         # Render the HTML template with the uploaded image file, textarea, and pie chart
         return render_template('result.html', image_path=image_path, student_marks=student_marks, chart_path=chart_path,total_marks=marks,student_percentage=percentage_correct,roll_number=roll_number)
+    student_count = db.session.query(Student).count()
+    questions_count = db.session.query(QuestionAnswers).count()
+        
 
-    return render_template('upload.html')
+    return render_template('upload.html',questions_count=questions_count,student_count=student_count)
+
+
+# Define a route to handle form submission
+@app.route("/submit_questionpaper",methods=['GET', 'POST'])
+def submit_questionpaper():
+    if request.method == 'POST':
+        input_number = int(request.form['input-number'])
+        inputs = []
+        textareas = []
+        marks = []
+        for i in range(input_number):
+            inputs.append(request.form[f'input-{i}'])
+            textareas.append(request.form[f'textarea-{i}'])
+            marks.append(request.form[f'marks-{i}'])
+        # Do something with the inputs and textareas
+        # Insert data into the database
+        for i in range(len(inputs)):
+            student = QuestionAnswers(question=inputs[i], answer=textareas[i],question_marks=marks[i])
+            db.session.add(student)
+            db.session.commit()
+    questions = QuestionAnswers.query.all()
+        
+    return render_template("addQuestions.html",questions=questions)
+
+
+@app.route('/allresults')
+def download_results():
+    students = Student.query.all()
+    return render_template("allresults.html",students=students)
 
 if __name__ == '__main__':
     # Create the images directory if it doesn't exist
