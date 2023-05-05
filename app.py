@@ -184,7 +184,7 @@ def upload_file():
 
      
         # Render the HTML template with the uploaded image file, textarea, and pie chart
-        return render_template('result.html', image_path=image_path, student_marks=marks_scored, chart_path=chart_path,total_marks=marks,student_percentage=percentage_correct,roll_number=roll_number)
+        return render_template('result.html', image_path=image_path, student_marks=marks_scored, chart_path=chart_path,total_marks=total_question_marks,student_percentage=percentage_student,roll_number=roll_number)
     student_count = db.session.query(Student).count()
     questions_count = db.session.query(QuestionAnswers).count()
         
