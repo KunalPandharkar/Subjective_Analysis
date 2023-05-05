@@ -1,24 +1,13 @@
-str = "ROLL- 202132124 2009 Name - Samruddhi Q   5) =) 1 Natural language Q processing is subfield of. Q    2) => This create HTML, CSs."
+import re
 
-questions = {}
-index = 1
+# Define the regex pattern to match roll numbers
+pattern = r'BE\d{2}S\d{2}F\d{3}'
 
-for i in range(len(str) - 1):
-    if str[i] == 'Q':
-        i+=1
-        while(str[i] == ' '):
-            i += 1
-        if str[i].isdigit():
-            index = str[i]
-            i += 1
-            j = i
-            temp_str = ''
-            while(str[j] != 'Q'):
-                if j+1 == len(str):
-                    break
-                temp_str += str[j]
-                j += 1
-            questions[index] = temp_str
+# Example string containing roll numbers
+string = 'These are some roll numbers: BE20S06F010, BE20S06F011, BE20S06F012'
 
-print(questions)
+# Find all roll numbers in the string using regex
+roll_numbers = re.findall(pattern, string)
 
+# Print out the roll numbers
+print(roll_numbers)

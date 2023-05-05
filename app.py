@@ -62,64 +62,116 @@ def upload_file():
 
         print(all_text)
 
-        # Using replace() method to remove spaces
-        output_str = all_text.replace(" ", "")
+        str_ans = all_text
+        questions = {}
+        index = 1
 
-        output_str = output_str.lower()
+        for i in range(len(str_ans) - 1):
+            if str_ans[i] == 'Q':
+                i+=1
+                while(str_ans[i] == ' '):
+                    i += 1
+                if str_ans[i].isdigit():
+                    index = str_ans[i]
+                    i += 1
+                    j = i
+                    temp_str = ''
+                    while(True):
+                        if(str_ans[j] == 'Q'):
+                            temp = j
+                            temp +=1 
+                            while(str_ans[temp] == ' '):
+                                temp += 1
+                            if(str_ans[temp].isdigit()):
+                                break
+                        if j+1 == len(str_ans):
+                            break
+                        temp_str += str_ans[j]
+                        j += 1
+                    questions[index] = temp_str
+
+        print(questions)
+
+
+
+        # Using replace() method to remove spaces
+        output_str = all_text
+
+        # output_str = output_str.lower()
         print(output_str)
 
         # Using regular expression to extract roll number
         # Using regular expressions to extract roll number, name, and subject
-        roll_pattern = r'roll-(\d+)'
+        roll_pattern = r'BE\d{2}S\d{2}F\d{3}'
         roll_match = re.search(roll_pattern, output_str)
         
         roll_number = 0
 
         if roll_match:
-            roll_number = roll_match.group(1)
+            roll_number = roll_match.group()
         else:
             print("No roll number found in the input string.")
 
-        # Define two sample answers
-        answer_1 = str(all_text)
-        answer_2 = standard_answer
+        answers_db = QuestionAnswers.query.all()
 
-        # Preprocess the text by removing punctuation and converting to lowercase
-        translator = str.maketrans('', '', string.punctuation)
-        answer_1 = answer_1.translate(translator).lower()
-        answer_2 = answer_2.translate(translator).lower()
+        question_index = 0
 
-        # Tokenize the text by splitting on whitespace
-        tokens_1 = nltk.word_tokenize(answer_1)
-        tokens_2 = nltk.word_tokenize(answer_2)
+        marks_scored = 0
 
-        # Create a set of unique tokens
-        unique_tokens = set(tokens_1 + tokens_2)
+        total_question_marks = 0
+        
+        for key,value in questions.items():
+            print('here-' ,value)
+            # Define two sample answers
+            answer_1 = str(value)
+            answer_2 = answers_db[question_index].answer
 
-        # Vectorize the text using TF-IDF
-        vectorizer = TfidfVectorizer(vocabulary=unique_tokens)
-        vectors = vectorizer.fit_transform([answer_1, answer_2]).toarray()
+            question_index += 1
 
-        # Calculate the cosine similarity between the two vectors
-        similarity = cosine_similarity([vectors[0]], [vectors[1]])[0][0]
+            # Preprocess the text by removing punctuation and converting to lowercase
+            translator = str.maketrans('', '', string.punctuation)
+            answer_1 = answer_1.translate(translator).lower()
+            answer_2 = answer_2.translate(translator).lower()
 
-        # Generate the percentage of correctness
-        percentage_correct = similarity * 100
-        percentage_correct = round(percentage_correct)
+            # Tokenize the text by splitting on whitespace
+            tokens_1 = nltk.word_tokenize(answer_1)
+            tokens_2 = nltk.word_tokenize(answer_2)
 
-        student_marks = (int(percentage_correct) / 100) * marks
+            # Create a set of unique tokens
+            unique_tokens = set(tokens_1 + tokens_2)
 
-        student_marks = round(student_marks)
+            # Vectorize the text using TF-IDF
+            vectorizer = TfidfVectorizer(vocabulary=unique_tokens)
+            vectors = vectorizer.fit_transform([answer_1, answer_2]).toarray()
+
+            # Calculate the cosine similarity between the two vectors
+            similarity = cosine_similarity([vectors[0]], [vectors[1]])[0][0]
+
+            # Generate the percentage of correctness
+            percentage_correct = similarity * 100
+            percentage_correct = round(percentage_correct)
+
+            total_question_marks += int(answers_db[question_index].question_marks)
+
+            student_marks = (int(percentage_correct) / 100) * int(answers_db[question_index].question_marks)
+
+            student_marks = round(student_marks)
+
+            marks_scored += student_marks
+        
+        print("total makrs scored - ",marks_scored)
 
 
         # Insert data into the database
-        student = Student(roll=roll_number, marks=student_marks,total_marks=marks)
+        student = Student(roll=roll_number, marks=marks_scored,total_marks=total_question_marks)
         db.session.add(student)
         db.session.commit()
 
+        percentage_student = round((marks_scored/ total_question_marks) * 100)
+
         # Generate a pie chart
         labels = ['Correct', 'Incorrect']
-        sizes = [int(percentage_correct), 100 - int(percentage_correct)]
+        sizes = [int(percentage_student), 100 - int(percentage_student)]
         explode = (0.1, 0)
         fig, ax = plt.subplots()
         ax.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
@@ -132,7 +184,7 @@ def upload_file():
 
      
         # Render the HTML template with the uploaded image file, textarea, and pie chart
-        return render_template('result.html', image_path=image_path, student_marks=student_marks, chart_path=chart_path,total_marks=marks,student_percentage=percentage_correct,roll_number=roll_number)
+        return render_template('result.html', image_path=image_path, student_marks=marks_scored, chart_path=chart_path,total_marks=marks,student_percentage=percentage_correct,roll_number=roll_number)
     student_count = db.session.query(Student).count()
     questions_count = db.session.query(QuestionAnswers).count()
         
