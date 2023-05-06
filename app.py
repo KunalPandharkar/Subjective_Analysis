@@ -36,32 +36,42 @@ class QuestionAnswers(db.Model):
 def upload_file():
     if request.method == 'POST':
         # Get the uploaded image file
-        uploaded_file = request.files['file']
-        image_path = 'static/images/' + uploaded_file.filename
-        uploaded_file.save(image_path)
+        # uploaded_file = request.files['file']
+        uploaded_files = request.files.getlist('file')
+        
+
+        ans_text = ''
+
+        for uploaded_file in uploaded_files:
+            all_text = ''
+            image_path = 'static/images/' + uploaded_file.filename
+            uploaded_file.save(image_path)
 
         # Get the standard answer and marks
-        standard_answer = request.form['standard_answer']
-        marks = int(request.form['marks'])
+        # standard_answer = request.form['standard_answer']
+        # marks = int(request.form['marks'])
 
-        #Process Image
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'Google_Key.json'
-        client = vision_v1.ImageAnnotatorClient()
+            #Process Image
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'Google_Key.json'
+            client = vision_v1.ImageAnnotatorClient()
 
-        with io.open(os.path.join(image_path),'rb') as image_file:
-            content = image_file.read()
+            with io.open(os.path.join(image_path),'rb') as image_file:
+                content = image_file.read()
 
-        image = vision_v1.types.Image(content=content)
+            image = vision_v1.types.Image(content=content)
 
-        response = client.text_detection(image=image)
-        texts = response.text_annotations
-        # Concatenate only the first item in the texts list
-        all_text = texts[0].description if len(texts) > 0 else ''
+            response = client.text_detection(image=image)
+            texts = response.text_annotations
+            # Concatenate only the first item in the texts list
+            all_text = texts[0].description if len(texts) > 0 else ''
 
-        all_text = all_text.replace('\n', ' ')
+            all_text = all_text.replace('\n', ' ')
+            ans_text = ans_text + all_text
 
-        print(all_text)
 
+        print(ans_text)
+
+        all_text = ans_text
         str_ans = all_text
         questions = {}
         index = 1
@@ -90,25 +100,25 @@ def upload_file():
                         j += 1
                     questions[index] = temp_str
 
+       
+        print("================================================================")
         print(questions)
-
-
 
         # Using replace() method to remove spaces
         output_str = all_text
 
         # output_str = output_str.lower()
-        print(output_str)
+        # print(output_str)
 
         # Using regular expression to extract roll number
         # Using regular expressions to extract roll number, name, and subject
-        roll_pattern = r'BE\d{2}S\d{2}F\d{3}'
+        roll_pattern = r"\bBE\d+\w*"
         roll_match = re.search(roll_pattern, output_str)
         
         roll_number = 0
 
         if roll_match:
-            roll_number = roll_match.group()
+            roll_number = roll_match.group(0)
         else:
             print("No roll number found in the input string.")
 
@@ -121,12 +131,13 @@ def upload_file():
         total_question_marks = 0
         
         for key,value in questions.items():
-            print('here-' ,value)
+            # print('here-' ,value)
             # Define two sample answers
             answer_1 = str(value)
             answer_2 = answers_db[question_index].answer
 
-            question_index += 1
+        
+
 
             # Preprocess the text by removing punctuation and converting to lowercase
             translator = str.maketrans('', '', string.punctuation)
@@ -158,7 +169,9 @@ def upload_file():
             student_marks = round(student_marks)
 
             marks_scored += student_marks
-        
+
+            # print("compare - ",answer_1," with - ", answer_2," marks scored - ",marks_scored," percetnage correct - ", percentage_correct)
+            question_index += 1
         print("total makrs scored - ",marks_scored)
 
 
@@ -166,6 +179,8 @@ def upload_file():
         student = Student(roll=roll_number, marks=marks_scored,total_marks=total_question_marks)
         db.session.add(student)
         db.session.commit()
+        
+
 
         percentage_student = round((marks_scored/ total_question_marks) * 100)
 
@@ -184,12 +199,13 @@ def upload_file():
 
      
         # Render the HTML template with the uploaded image file, textarea, and pie chart
-        return render_template('result.html', image_path=image_path, student_marks=marks_scored, chart_path=chart_path,total_marks=total_question_marks,student_percentage=percentage_student,roll_number=roll_number)
+        return render_template('result.html', image_path=uploaded_files, student_marks=marks_scored, chart_path=chart_path,total_marks=total_question_marks,student_percentage=percentage_student,roll_number=roll_number)
     student_count = db.session.query(Student).count()
     questions_count = db.session.query(QuestionAnswers).count()
+    questions = QuestionAnswers.query.all()
         
 
-    return render_template('upload.html',questions_count=questions_count,student_count=student_count)
+    return render_template('upload.html',questions_count=questions_count,student_count=student_count,questions=questions)
 
 
 # Define a route to handle form submission
